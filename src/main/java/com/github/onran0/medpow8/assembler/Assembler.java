@@ -1,6 +1,5 @@
 package com.github.onran0.medpow8.assembler;
 
-import com.github.onran0.medpow8.MachineCommand;
 import com.github.onran0.medpow8.assembler.parser.Command;
 import com.github.onran0.medpow8.assembler.parser.Operand;
 import com.github.onran0.medpow8.assembler.parser.Parser;
