@@ -67,13 +67,16 @@ public class Disassembler {
             Token token = new Token(TokenType.values()[pattern & 0b111111], null, i, 0);
 
             boolean allRegs = (pattern >> 8 & 0b11) == 0b11;
+            boolean hasReg = (pattern >> 8 & 0b11) != 0;
 
             for(int j = 0;j < getOperandsCount(pattern);j++) {
+                boolean isReg = ((pattern >> (8 + j)) & 1) == 1;
+
                 operands.add(
                         new Operand(
                             ((pattern >> (6 + j)) & 1) == 1,
-                            !allRegs ? (mCmd.getOp(j) & 0xFF) : (mCmd.getOp(0) & 0xFF) >> (j * 2) & 0b11,
-                            ((pattern >> (8 + j)) & 1) == 1 ? OperandType.REGISTER : OperandType.CONST
+                            !allRegs ? (mCmd.getOp(hasReg ? (isReg ? 0 : 1) : j) & 0xFF) : (mCmd.getOp(0) & 0xFF) >> (j * 2) & 0b11,
+                            isReg ? OperandType.REGISTER : OperandType.CONST
                         )
                 );
             }
