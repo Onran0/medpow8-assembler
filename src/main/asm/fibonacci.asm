@@ -3,7 +3,7 @@ nop ; start
 mov r1, r2
 add r0, r2
 
-mov r2, 1
+mov r2, r1
 
 add 1, r0
 
