@@ -55,13 +55,13 @@ public class Assembler {
     }
 
     public static List<MachineCommand> assembleToList(List<Command> commands) throws AssemblyException {
-        if(commands.size() > 256)
-            System.err.println("WARNING: The number of commands is more than 256. You will not be able to run the program without an emulator.");
+        if(commands.size() > 255)
+            System.err.println("WARNING: The number of commands is more than 255. You will not be able to run the program without an emulator.");
 
         List<MachineCommand> machineCommands = new ArrayList<>();
 
         for(Command command : commands) {
-            if(command.getOperands().size() > 3)
+            if(command.getOperands().size() > 2)
                 throw new AssemblyException("invalid operands count", command.getToken());
 
             byte code = getCommandMachineCode(command);
