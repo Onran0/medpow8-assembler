@@ -11,9 +11,7 @@ import com.github.onran0.medpow8.disassembler.Disassembler;
 import com.github.onran0.medpow8.disassembler.DisassemblyException;
 import com.github.onran0.medpow8.util.IO;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,10 +27,14 @@ public class SBSTest {
             return "0".repeat(len - str.length()) + str;
     }
 
+    private static InputStream getASMScript(String path) throws IOException {
+        return new FileInputStream("src/main/asm/" + path);
+    }
+
     public static void main(String[] args) throws AssemblyException, DisassemblyException, IOException {
         String scriptName = "fibonacci";
 
-        String code = IO.readASMScript(scriptName + ".asm");
+        String code = IO.readStream(getASMScript(scriptName + ".asm"));
 
         System.out.println("Source \n");
 

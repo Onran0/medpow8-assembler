@@ -19,12 +19,4 @@ public final class IO {
 
         return builder.toString();
     }
-
-    public static String readASMScript(String path) throws IOException {
-        return readStream(getASMScript(path));
-    }
-
-    public static InputStream getASMScript(String path) throws IOException {
-        return new FileInputStream("src/main/asm/" + path);
-    }
 }
