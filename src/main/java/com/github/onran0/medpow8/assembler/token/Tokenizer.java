@@ -1,6 +1,7 @@
 package com.github.onran0.medpow8.assembler.token;
 
 import com.github.onran0.medpow8.assembler.AssemblyException;
+import com.github.onran0.medpow8.util.IO;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,23 +28,13 @@ public class Tokenizer {
     }
 
     private final Stack<Character> chars;
-    private int pos;
 
     public Tokenizer(InputStream in) throws IOException {
-        this(new InputStreamReader(in, StandardCharsets.UTF_8));
+        this(IO.readStream(in));
     }
 
     public Tokenizer(Reader reader) throws IOException {
-        chars = new Stack<>();
-
-        StringBuilder buffer = new StringBuilder();
-
-        int c;
-
-        while ((c = reader.read()) != -1)
-            buffer.append((char) c);
-
-        init(buffer);
+        this(IO.readFromReader(reader));
     }
 
     public Tokenizer(String input) {
@@ -52,10 +43,7 @@ public class Tokenizer {
 
     public Tokenizer(StringBuilder input) {
         chars = new Stack<>();
-        init(input);
-    }
 
-    private void init(StringBuilder input) {
         for(int i = input.length() - 1; i >= 0; i--)
             chars.push(input.charAt(i));
     }
