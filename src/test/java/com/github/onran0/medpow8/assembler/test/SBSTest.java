@@ -28,7 +28,7 @@ public class SBSTest {
     }
 
     private static InputStream getASMScript(String path) throws IOException {
-        return new FileInputStream("src/main/asm/" + path);
+        return new FileInputStream("src/test/asm/" + path);
     }
 
     public static void main(String[] args) throws AssemblyException, DisassemblyException, IOException {
