@@ -1,4 +1,4 @@
-package com.github.onran0.medpow8;
+package com.github.onran0.medpow8.assembler.test;
 
 import com.github.onran0.medpow8.assembler.Assembler;
 import com.github.onran0.medpow8.assembler.AssemblyException;
@@ -11,14 +11,13 @@ import com.github.onran0.medpow8.disassembler.Disassembler;
 import com.github.onran0.medpow8.disassembler.DisassemblyException;
 import com.github.onran0.medpow8.util.IO;
 
-import java.io.Closeable;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
-public class Test {
+public class SBSTest {
     private static void printBin(byte b) {
         System.out.print(ensureLen(Integer.toBinaryString(b & 0xFF), 8));
     }
