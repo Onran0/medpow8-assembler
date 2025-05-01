@@ -1,9 +1,9 @@
-package com.github.onran0.medpow8.assembler.parser;
+package com.github.onran0.medpow8.assembler;
 
 public final class Operand {
     private final boolean pointer;
     private final int value;
-    private OperandType type;
+    private final OperandType type;
 
     public Operand(final boolean pointer, final int value, final OperandType type) {
         this.pointer = pointer;

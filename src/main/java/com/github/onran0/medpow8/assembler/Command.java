@@ -1,4 +1,4 @@
-package com.github.onran0.medpow8.assembler.parser;
+package com.github.onran0.medpow8.assembler;
 
 import com.github.onran0.medpow8.assembler.token.Token;
 import com.github.onran0.medpow8.assembler.token.TokenType;

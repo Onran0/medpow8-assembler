@@ -1,4 +1,4 @@
-package com.github.onran0.medpow8.assembler.parser;
+package com.github.onran0.medpow8.assembler;
 
 public enum OperandType {
     REGISTER,

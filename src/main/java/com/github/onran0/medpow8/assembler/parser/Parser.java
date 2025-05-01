@@ -1,6 +1,9 @@
 package com.github.onran0.medpow8.assembler.parser;
 
 import com.github.onran0.medpow8.assembler.AssemblyException;
+import com.github.onran0.medpow8.assembler.Command;
+import com.github.onran0.medpow8.assembler.Operand;
+import com.github.onran0.medpow8.assembler.OperandType;
 import com.github.onran0.medpow8.assembler.token.Token;
 import com.github.onran0.medpow8.assembler.token.TokenType;
 
