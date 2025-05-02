@@ -23,6 +23,10 @@ public final class Operand {
         return OperandType.REGISTER == type;
     }
 
+    public boolean isRegisterAndNotSP() {
+        return OperandType.REGISTER == type && value < 4;
+    }
+
     public boolean isConstant() {
         return OperandType.CONST == type;
     }
@@ -37,10 +41,22 @@ public final class Operand {
         if(pointer)
             str.append('%');
 
-        if(isRegister())
-            str.append('r');
+        if(isRegister()) {
+            if(value < 4)
+                str.append('r');
+            else
+                str.append("sp");
+        }
 
-        str.append(value);
+        if(isConstant() || isRegister() && value < 4)
+            str.append(value);
+
+        if (isFlag()) {
+            if(value == 0)
+                str.append('e');
+            else
+                str.append(value == 1 ? 'l' : 'h');
+        }
 
         return str.toString();
     }

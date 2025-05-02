@@ -68,17 +68,32 @@ public class Disassembler {
 
             boolean allRegs = (pattern >> 8 & 0b11) == 0b11;
             boolean hasReg = (pattern >> 8 & 0b11) != 0;
+            boolean hasFlag = (pattern & 0b1110000000000) != 0;
+            boolean hasRegSP = (pattern & 0b10000000000000) != 0;
 
             for(int j = 0;j < getOperandsCount(pattern);j++) {
                 boolean isReg = ((pattern >> (8 + j)) & 1) == 1;
 
-                operands.add(
-                        new Operand(
-                            ((pattern >> (6 + j)) & 1) == 1,
-                            !allRegs ? (mCmd.getOp(hasReg ? (isReg ? 0 : 1) : j) & 0xFF) : (mCmd.getOp(0) & 0xFF) >> (j * 2) & 0b11,
-                            isReg ? OperandType.REGISTER : OperandType.CONST
-                        )
-                );
+                if(hasFlag && j == 0) {
+                    operands.add(new Operand(
+                            false,
+                            ((pattern & 0b0100000000000) != 0 ? 1 : 0) +
+                                    2 * ((pattern & 0b1000000000000) != 0 ? 1 : 0)
+                            , OperandType.FLAG
+                    ));
+                } else if(hasRegSP && j == 0) {
+                    operands.add(new Operand(
+                            false, 4, OperandType.REGISTER
+                    ));
+                } else {
+                    operands.add(
+                            new Operand(
+                                    ((pattern >> (6 + j)) & 1) == 1,
+                                    !allRegs ? (mCmd.getOp(hasReg ? (isReg ? 0 : 1) : (hasFlag || hasRegSP ? 0 : j)) & 0xFF) : (mCmd.getOp(0) & 0xFF) >> (j * 2) & 0b11,
+                                    isReg ? OperandType.REGISTER : OperandType.CONST
+                            )
+                    );
+                }
             }
 
             commands.add(new Command(token, operands));

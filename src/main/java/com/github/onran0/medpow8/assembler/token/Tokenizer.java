@@ -16,6 +16,11 @@ public class Tokenizer {
     private static final String IGNORABLE = "\t\r ";
     private static final String LETTERS = "qwertyuiopasdfghjklzxcvbnm";
     private static final char REGISTER_DECLARATION = 'r';
+    private static final char FLAG_E_DECLARATION = 'e';
+    private static final char FLAG_L_DECLARATION = 'l';
+    private static final char FLAG_H_DECLARATION = 'h';
+    private static final String FLAGS = "" + FLAG_E_DECLARATION + FLAG_L_DECLARATION + FLAG_H_DECLARATION;
+    private static final String SP_REGISTER = "sp";
     private static final String DIGITS = "0123456789";
     private static final char POINTER = '%';
     private static final char COMMA = ',';
@@ -91,7 +96,7 @@ public class Tokenizer {
             } else if (parsingRegister) {
                 if (DIGITS.indexOf(c) == -1)
                     throw new AssemblyException("digit expected", line, column);
-                else {
+                 else {
                     int num = DIGITS.indexOf(c);
 
                     if (num > 3)
@@ -118,6 +123,27 @@ public class Tokenizer {
                     parsingNum = false;
                     tokens.add(new Token(CONST, buffer.toString(), line, column));
                     buffer.setLength(0);
+                }
+            } else if(!parsingCommand && (c == SP_REGISTER.charAt(0) || FLAGS.indexOf(c) != -1)) {
+                if(c == SP_REGISTER.charAt(0)) {
+                    next = chars.pop();
+
+                    if(next == null)
+                        throw new AssemblyException("unexpected end", line, column);
+
+                    if(next == SP_REGISTER.charAt(1))
+                        tokens.add(new Token(REG_SP, null, line, column));
+                    else
+                        throw new AssemblyException("'sp' expected", line, column);
+                } else if(FLAGS.indexOf(c) != -1) {
+                    TokenType type = switch(c) {
+                        case FLAG_E_DECLARATION -> TokenType.FLAG_E;
+                        case FLAG_L_DECLARATION -> TokenType.FLAG_L;
+                        case FLAG_H_DECLARATION -> TokenType.FLAG_H;
+                        default -> null;
+                    };
+
+                    tokens.add(new Token(type, null, line, column));
                 }
             } else if (parsingCommand || LETTERS.indexOf(c) != -1) {
                 if (c == REGISTER_DECLARATION && next != null && DIGITS.indexOf(next) != -1)

@@ -45,6 +45,10 @@ public enum TokenType {
     COMMA(",", false),
     COMMENT(";", false),
     POINTER("%", false),
+    FLAG_E("e", false),
+    FLAG_L("l", false),
+    FLAG_H("h", false),
+    REG_SP("sp", false),
     LABEL(":", false);
     private final boolean isCommand;
     private final String name;

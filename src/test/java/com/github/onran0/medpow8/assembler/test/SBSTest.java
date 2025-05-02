@@ -32,7 +32,7 @@ public class SBSTest {
     }
 
     public static void main(String[] args) throws AssemblyException, DisassemblyException, IOException {
-        String scriptName = "fibonacci";
+        String scriptName = "program";
 
         String code = IO.readStream(getASMScript(scriptName + ".asm"));
 

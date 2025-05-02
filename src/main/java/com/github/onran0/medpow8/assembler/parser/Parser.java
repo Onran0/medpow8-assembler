@@ -35,12 +35,32 @@ public class Parser {
 
         for (Token token : tokens) {
             switch(token.type()) {
-                case REG0, REG1, REG2, REG3:
+                case FLAG_E, FLAG_L, FLAG_H:
+                    final int flagNum = switch(token.type()) {
+                        case FLAG_E -> 0;
+                        case FLAG_L -> 1;
+                        case FLAG_H -> 2;
+                        default -> -1;
+                    };
+
+                    if(prevToken == null || command == null)
+                        throw new AssemblyException("unexpected flag", token);
+
+                    if(!operands.isEmpty() && !comma)
+                        throw new AssemblyException("comma expected", prevToken);
+
+                    comma = false;
+
+                    operands.add(new Operand(prevToken.type() == TokenType.POINTER, flagNum, OperandType.FLAG));
+                    break;
+
+                case REG0, REG1, REG2, REG3, REG_SP:
                     final int regNum = switch(token.type()) {
                         case REG0 -> 0;
                         case REG1 -> 1;
                         case REG2 -> 2;
                         case REG3 -> 3;
+                        case REG_SP -> 4;
                         default -> -1;
                     };
 

@@ -18,13 +18,13 @@ public class Assembler {
         pattern |= (op1 != null && op1.isPointer() ? 1 : 0) << 6;
         pattern |= (op2 != null && op2.isPointer() ? 1 : 0) << 7;
 
-        pattern |= (op1 != null && op1.isRegister() ? 1 : 0) << 8;
-        pattern |= (op2 != null && op2.isRegister() ? 1 : 0) << 9;
+        pattern |= (op1 != null && op1.isRegisterAndNotSP() ? 1 : 0) << 8;
+        pattern |= (op2 != null && op2.isRegisterAndNotSP() ? 1 : 0) << 9;
 
         pattern |= (op1 != null && op1.isFlag() && op1.getValue() == 0 ? 1 : 0) << 10;
         pattern |= (op1 != null && op1.isFlag() && op1.getValue() == 1 ? 1 : 0) << 11;
-        pattern |= (op1 != null && op1.isFlag() && op1.getValue() == 2 ? 1 : 0) << 11;
-        pattern |= (op1 != null && op1.isFlag() && op1.getValue() == 3 ? 1 : 0) << 12;
+        pattern |= (op1 != null && op1.isFlag() && op1.getValue() == 2 ? 1 : 0) << 12;
+        pattern |= (op1 != null && op1.isRegister() && op1.getValue() == 4 ? 1 : 0) << 13;
 
         Integer code = Patterns.getCodeByPattern(pattern);
 
@@ -71,16 +71,23 @@ public class Assembler {
                 Operand opi1 = command.getOperands().get(0);
                 Operand opi2 = command.getOperands().get(1);
 
-                if(opi1.isRegister() && opi2.isRegister()) {
-                    op1 = (byte) opi1.getValue();
-                    op1 = (byte) (op1 & 0xFF | opi2.getValue() << 2);
-                } else {
-                    if(opi2.isRegister()) {
-                        op1 = (byte) opi2.getValue();
-                        op2 = (byte) opi1.getValue();
-                    } else {
+                if(opi2.isFlag() || (opi2.isRegister() && opi2.getValue() == 4))
+                    throw new AssemblyException("flag or sp register at second operand", command.getToken());
+
+                if(opi1.isFlag() || !opi1.isRegisterAndNotSP())
+                    op1 = (byte) opi2.getValue();
+                else {
+                    if(opi1.isRegister() && opi2.isRegister()) {
                         op1 = (byte) opi1.getValue();
-                        op2 = (byte) opi2.getValue();
+                        op1 = (byte) (op1 & 0xFF | opi2.getValue() << 2);
+                    } else {
+                        if(opi2.isRegister()) {
+                            op1 = (byte) opi2.getValue();
+                            op2 = (byte) opi1.getValue();
+                        } else {
+                            op1 = (byte) opi1.getValue();
+                            op2 = (byte) opi2.getValue();
+                        }
                     }
                 }
             } else if(command.getOperands().size() == 1)
