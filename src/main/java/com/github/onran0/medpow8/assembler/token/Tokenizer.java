@@ -162,7 +162,7 @@ public class Tokenizer {
 
                         if (type == null && !prevIsJmp)
                             throw new AssemblyException("undefined command:" + buffer, line, column);
-                        else if(prevIsJmp) {
+                        else if(prevIsJmp && type == null) {
                             tokens.add(new Token(LABEL_REFERENCE, buffer.toString(), line, column));
 
                             buffer.setLength(0);

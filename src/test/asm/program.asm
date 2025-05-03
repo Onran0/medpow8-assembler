@@ -9,3 +9,4 @@ test:
 blyat:
     mov %2, %65
     jmp test
+    jmp blyat2
