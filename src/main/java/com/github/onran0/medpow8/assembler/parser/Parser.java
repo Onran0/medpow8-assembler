@@ -115,17 +115,19 @@ public class Parser {
                 case COMMA: comma = true; break;
             }
 
-            if (command != null && (token.type().isCommand() || (nextToken != null && nextToken.type() == TokenType.LABEL_DECLARATION) || i == tokens.size() - 1)) {
+            boolean addCommand = (nextToken != null && nextToken.type() == TokenType.LABEL_DECLARATION) || i == tokens.size() - 1;
+
+            if (command != null && (token.type().isCommand() || addCommand)) {
                 commands.add(new Command(command, new ArrayList<>(operands)));
                 operands.clear();
                 command = null;
             }
 
             if(token.type().isCommand()) {
-                command = token;
-
-                if(i == tokens.size() - 1)
+                if(addCommand)
                     commands.add(new Command(token, operands));
+                else
+                    command = token;
             }
 
             prevToken = token;
