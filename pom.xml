@@ -6,7 +6,7 @@
 
     <groupId>com.github.onran0.medpow8</groupId>
     <artifactId>medpow8-assembler</artifactId>
-    <version>beta-1.2.0</version>
+    <version>beta-1.2.1</version>
 
     <properties>
         <maven.compiler.source>16</maven.compiler.source>
