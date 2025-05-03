@@ -83,6 +83,8 @@ public class Tokenizer {
             if (!chars.isEmpty())
                 next = chars.get(chars.size() - 1);
 
+            boolean flag = FLAGS.indexOf(c) != -1 && (next == null || LETTERS.indexOf(next) == -1);
+
             if (parsingComment || c == COMMENT_START) {
                 if (!parsingComment)
                     parsingComment = true;
@@ -125,7 +127,7 @@ public class Tokenizer {
                     tokens.add(new Token(CONST, buffer.toString(), line, column));
                     buffer.setLength(0);
                 }
-            } else if(!parsingCommandOrLabel && (c == SP_REGISTER.charAt(0) || FLAGS.indexOf(c) != -1)) {
+            } else if(!parsingCommandOrLabel && (c == SP_REGISTER.charAt(0) || flag)) {
                 if(c == SP_REGISTER.charAt(0)) {
                     next = chars.pop();
 
@@ -136,7 +138,7 @@ public class Tokenizer {
                         tokens.add(new Token(REG_SP, null, line, column));
                     else
                         throw new AssemblyException("'sp' expected", line, column);
-                } else if(FLAGS.indexOf(c) != -1) {
+                } else if(flag) {
                     TokenType type = switch(c) {
                         case FLAG_E_DECLARATION -> TokenType.FLAG_E;
                         case FLAG_L_DECLARATION -> TokenType.FLAG_L;
