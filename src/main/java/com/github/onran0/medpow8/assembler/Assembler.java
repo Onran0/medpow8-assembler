@@ -1,11 +1,14 @@
 package com.github.onran0.medpow8.assembler;
 
 import com.github.onran0.medpow8.assembler.parser.Parser;
+import com.github.onran0.medpow8.assembler.token.TokenType;
 import com.github.onran0.medpow8.assembler.token.Tokenizer;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Assembler {
 
@@ -21,10 +24,10 @@ public class Assembler {
         pattern |= (op1 != null && op1.isRegisterAndNotSP() ? 1 : 0) << 8;
         pattern |= (op2 != null && op2.isRegisterAndNotSP() ? 1 : 0) << 9;
 
-        pattern |= (op1 != null && op1.isFlag() && op1.getValue() == 0 ? 1 : 0) << 10;
-        pattern |= (op1 != null && op1.isFlag() && op1.getValue() == 1 ? 1 : 0) << 11;
-        pattern |= (op1 != null && op1.isFlag() && op1.getValue() == 2 ? 1 : 0) << 12;
-        pattern |= (op1 != null && op1.isRegister() && op1.getValue() == 4 ? 1 : 0) << 13;
+        pattern |= (op1 != null && op1.isFlag() && op1.getIntValue() == 0 ? 1 : 0) << 10;
+        pattern |= (op1 != null && op1.isFlag() && op1.getIntValue() == 1 ? 1 : 0) << 11;
+        pattern |= (op1 != null && op1.isFlag() && op1.getIntValue() == 2 ? 1 : 0) << 12;
+        pattern |= (op1 != null && op1.isRegister() && op1.getIntValue() == 4 ? 1 : 0) << 13;
 
         Integer code = Patterns.getCodeByPattern(pattern);
 
@@ -55,10 +58,23 @@ public class Assembler {
     }
 
     public static List<MachineCommand> assembleToList(List<Command> commands) throws AssemblyException {
+        commands = new ArrayList<>(commands);
+
+        final Map<String, Integer> labelsMap = new HashMap<>();
+
         if(commands.size() > 255)
             System.err.println("WARNING: The number of commands is more than 255. You will not be able to run the program without an emulator.");
 
         List<MachineCommand> machineCommands = new ArrayList<>();
+
+        for(int i = 0;i < commands.size();i++) {
+            Command command = commands.get(i);
+
+            if(command.getType() == TokenType.LABEL_DECLARATION) {
+                labelsMap.put(command.getToken().value(), i);
+                commands.remove(i--);
+            }
+        }
 
         for(Command command : commands) {
             if(command.getOperands().size() > 2)
@@ -71,30 +87,44 @@ public class Assembler {
                 Operand opi1 = command.getOperands().get(0);
                 Operand opi2 = command.getOperands().get(1);
 
-                if(opi2.isFlag() || (opi2.isRegister() && opi2.getValue() == 4))
+                if (opi2.isFlag() || (opi2.isRegister() && opi2.getIntValue() == 4))
                     throw new AssemblyException("flag or sp register at second operand", command.getToken());
 
-                if(opi1.isFlag() || !opi1.isRegisterAndNotSP())
-                    op1 = (byte) opi2.getValue();
+                if (opi1.isFlag() || (opi1.isRegister() && opi1.getIntValue() == 4))
+                    op1 = (byte) opi2.getIntValue();
                 else {
-                    if(opi1.isRegister() && opi2.isRegister()) {
-                        op1 = (byte) opi1.getValue();
-                        op1 = (byte) (op1 & 0xFF | opi2.getValue() << 2);
+                    if(opi1.isRegisterAndNotSP() && opi2.isRegisterAndNotSP()) {
+                        op1 = (byte) opi1.getIntValue();
+                        op1 = (byte) (op1 & 0xFF | opi2.getIntValue() << 2);
                     } else {
                         if(opi2.isRegister()) {
-                            op1 = (byte) opi2.getValue();
-                            op2 = (byte) opi1.getValue();
+                            op1 = (byte) opi2.getIntValue();
+                            op2 = (byte) opi1.getIntValue();
                         } else {
-                            op1 = (byte) opi1.getValue();
-                            op2 = (byte) opi2.getValue();
+                            op1 = (byte) opi1.getIntValue();
+                            op2 = (byte) opi2.getIntValue();
                         }
                     }
                 }
-            } else if(command.getOperands().size() == 1)
-                op1 = (byte) command.getOperands().get(0).getValue();
+            } else if(command.getOperands().size() == 1) {
+                Operand opi1 = command.getOperands().get(0);
+
+                if(opi1.isLabelReference()) {
+                    Integer commandAtLabel = labelsMap.get(opi1.getStringValue());
+
+                    if(commandAtLabel == null)
+                        throw new AssemblyException("undefined label: '" + opi1.getStringValue() + "'", command.getToken());
+                    else
+                        op1 = commandAtLabel.byteValue();
+                } else
+                    op1 = (byte) opi1.getIntValue();
+            }
 
             machineCommands.add(new MachineCommand(code, op1, op2));
         }
+
+        if(!labelsMap.isEmpty() && machineCommands.isEmpty())
+            machineCommands.add(new MachineCommand((byte) 0, (byte) 0, (byte) 0));
 
         return machineCommands;
     }

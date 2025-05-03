@@ -3,5 +3,6 @@ package com.github.onran0.medpow8.assembler;
 public enum OperandType {
     REGISTER,
     CONST,
-    FLAG
+    FLAG,
+    LABEL_REFERENCE
 }

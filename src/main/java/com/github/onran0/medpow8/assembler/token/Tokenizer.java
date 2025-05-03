@@ -5,9 +5,7 @@ import com.github.onran0.medpow8.util.IO;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.github.onran0.medpow8.assembler.token.TokenType.*;
@@ -20,6 +18,7 @@ public class Tokenizer {
     private static final char FLAG_L_DECLARATION = 'l';
     private static final char FLAG_H_DECLARATION = 'h';
     private static final String FLAGS = "" + FLAG_E_DECLARATION + FLAG_L_DECLARATION + FLAG_H_DECLARATION;
+    private static final char LABEL_DECLARATION = ':';
     private static final String SP_REGISTER = "sp";
     private static final String DIGITS = "0123456789";
     private static final char POINTER = '%';
@@ -66,13 +65,15 @@ public class Tokenizer {
 
         boolean parsingRegister = false,
                 parsingNum = false,
-                parsingCommand = false,
+                parsingCommandOrLabel = false,
                 parsingComment = false;
 
         StringBuilder buffer = new StringBuilder();
 
         int line = 1;
         int column = 1;
+
+        boolean prevIsJmp = false;
 
         while(!chars.isEmpty()) {
             char c = chars.pop();
@@ -124,7 +125,7 @@ public class Tokenizer {
                     tokens.add(new Token(CONST, buffer.toString(), line, column));
                     buffer.setLength(0);
                 }
-            } else if(!parsingCommand && (c == SP_REGISTER.charAt(0) || FLAGS.indexOf(c) != -1)) {
+            } else if(!parsingCommandOrLabel && (c == SP_REGISTER.charAt(0) || FLAGS.indexOf(c) != -1)) {
                 if(c == SP_REGISTER.charAt(0)) {
                     next = chars.pop();
 
@@ -145,24 +146,41 @@ public class Tokenizer {
 
                     tokens.add(new Token(type, null, line, column));
                 }
-            } else if (parsingCommand || LETTERS.indexOf(c) != -1) {
+            } else if (parsingCommandOrLabel || LETTERS.indexOf(c) != -1) {
                 if (c == REGISTER_DECLARATION && next != null && DIGITS.indexOf(next) != -1)
                     parsingRegister = true;
                 else {
-                    if (!parsingCommand)
-                        parsingCommand = true;
+                    if (!parsingCommandOrLabel)
+                        parsingCommandOrLabel = true;
 
                     buffer.append(c);
 
-                    if (next == null || LETTERS.indexOf(next) == -1) {
-                        parsingCommand = false;
+                    if (next == null || (LETTERS.indexOf(next) == -1) && next != LABEL_DECLARATION) {
+                        parsingCommandOrLabel = false;
 
                         TokenType type = COMMAND_NAME_TO_TYPE.get(buffer.toString());
 
-                        if (type == null)
+                        if (type == null && !prevIsJmp)
                             throw new AssemblyException("undefined command:" + buffer, line, column);
+                        else if(prevIsJmp) {
+                            tokens.add(new Token(LABEL_REFERENCE, buffer.toString(), line, column));
 
-                        tokens.add(new Token(type, null, line, column));
+                            buffer.setLength(0);
+                        } else {
+                            tokens.add(new Token(type, null, line, column));
+
+                            prevIsJmp = type.isJmp();
+
+                            buffer.setLength(0);
+                        }
+                    } else if(next == LABEL_DECLARATION) {
+                        chars.pop();
+
+                        parsingCommandOrLabel = false;
+
+                        prevIsJmp = false;
+
+                        tokens.add(new Token(TokenType.LABEL_DECLARATION, buffer.toString(), line, column));
 
                         buffer.setLength(0);
                     }

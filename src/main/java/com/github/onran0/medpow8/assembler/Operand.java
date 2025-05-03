@@ -2,12 +2,14 @@ package com.github.onran0.medpow8.assembler;
 
 public final class Operand {
     private final boolean pointer;
-    private final int value;
+    private final int intValue;
+    private final String stringValue;
     private final OperandType type;
 
-    public Operand(final boolean pointer, final int value, final OperandType type) {
+    public Operand(final boolean pointer, final int intValue, final String stringValue, final OperandType type) {
         this.pointer = pointer;
-        this.value = value;
+        this.intValue = intValue;
+        this.stringValue = stringValue;
         this.type = type;
     }
 
@@ -24,15 +26,21 @@ public final class Operand {
     }
 
     public boolean isRegisterAndNotSP() {
-        return OperandType.REGISTER == type && value < 4;
+        return OperandType.REGISTER == type && intValue < 4;
     }
 
     public boolean isConstant() {
         return OperandType.CONST == type;
     }
 
-    public int getValue() {
-        return value;
+    public boolean isLabelReference() { return OperandType.LABEL_REFERENCE == type; }
+
+    public int getIntValue() {
+        return intValue;
+    }
+
+    public String getStringValue() {
+        return stringValue;
     }
 
     public String toString() {
@@ -42,21 +50,24 @@ public final class Operand {
             str.append('%');
 
         if(isRegister()) {
-            if(value < 4)
+            if(intValue < 4)
                 str.append('r');
             else
                 str.append("sp");
         }
 
-        if(isConstant() || isRegister() && value < 4)
-            str.append(value);
+        if(isConstant() || isRegister() && intValue < 4)
+            str.append(intValue);
 
         if (isFlag()) {
-            if(value == 0)
+            if(intValue == 0)
                 str.append('e');
             else
-                str.append(value == 1 ? 'l' : 'h');
+                str.append(intValue == 1 ? 'l' : 'h');
         }
+
+        if(isLabelReference())
+            str.append(stringValue);
 
         return str.toString();
     }

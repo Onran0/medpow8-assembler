@@ -1,5 +1,8 @@
 package com.github.onran0.medpow8.assembler.token;
 
+import java.util.Arrays;
+import java.util.List;
+
 public enum TokenType {
     // Commands
     NOP("nop", true),
@@ -49,9 +52,13 @@ public enum TokenType {
     FLAG_L("l", false),
     FLAG_H("h", false),
     REG_SP("sp", false),
-    LABEL(":", false);
+    LABEL_DECLARATION(":", false),
+    LABEL_REFERENCE(null, false);
     private final boolean isCommand;
     private final String name;
+    private static final List<TokenType> JUMPS = Arrays.asList(
+            JMP, JE, JL, JH, JEL, JEH
+    );
 
     TokenType(String name, boolean isCommand) {
         this.name = name;
@@ -65,4 +72,6 @@ public enum TokenType {
     public boolean isCommand() {
         return isCommand;
     }
+
+    public boolean isJmp() { return JUMPS.contains(this); }
 }

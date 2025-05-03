@@ -79,18 +79,18 @@ public class Disassembler {
                             false,
                             ((pattern & 0b0100000000000) != 0 ? 1 : 0) +
                                     2 * ((pattern & 0b1000000000000) != 0 ? 1 : 0)
-                            , OperandType.FLAG
+                            , null, OperandType.FLAG
                     ));
                 } else if(hasRegSP && j == 0) {
                     operands.add(new Operand(
-                            false, 4, OperandType.REGISTER
+                            false, 4, null,OperandType.REGISTER
                     ));
                 } else {
                     operands.add(
                             new Operand(
                                     ((pattern >> (6 + j)) & 1) == 1,
                                     !allRegs ? (mCmd.getOp(hasReg ? (isReg ? 0 : 1) : (hasFlag || hasRegSP ? 0 : j)) & 0xFF) : (mCmd.getOp(0) & 0xFF) >> (j * 2) & 0b11,
-                                    isReg ? OperandType.REGISTER : OperandType.CONST
+                                    null, isReg ? OperandType.REGISTER : OperandType.CONST
                             )
                     );
                 }

@@ -28,17 +28,24 @@ public final class Command {
     }
 
     public String toString() {
-        StringBuilder str = new StringBuilder(token.type().getName());
+        StringBuilder str = new StringBuilder();
 
-        str.append(' ');
+        if(token.type() != TokenType.LABEL_DECLARATION) {
+            str.append(token.type().getName());
 
-        for(Operand operand : operands) {
-            str.append(operand);
-            str.append(", ");
+            str.append(' ');
+
+            for(Operand operand : operands) {
+                str.append(operand);
+                str.append(", ");
+            }
+
+            if(!operands.isEmpty())
+                str.setLength(str.length() - 2);
+        } else {
+            str.append(token.value());
+            str.append(':');
         }
-
-        if(!operands.isEmpty())
-            str.setLength(str.length() - 2);
 
         return str.toString();
     }

@@ -34,6 +34,8 @@ public class Parser {
         int i = 0;
 
         for (Token token : tokens) {
+            Token nextToken = (i + 1) < tokens.size() ? tokens.get(i + 1) : null;
+
             switch(token.type()) {
                 case FLAG_E, FLAG_L, FLAG_H:
                     final int flagNum = switch(token.type()) {
@@ -51,7 +53,7 @@ public class Parser {
 
                     comma = false;
 
-                    operands.add(new Operand(prevToken.type() == TokenType.POINTER, flagNum, OperandType.FLAG));
+                    operands.add(new Operand(prevToken.type() == TokenType.POINTER, flagNum, null, OperandType.FLAG));
                     break;
 
                 case REG0, REG1, REG2, REG3, REG_SP:
@@ -72,7 +74,7 @@ public class Parser {
 
                     comma = false;
 
-                    operands.add(new Operand(prevToken.type() == TokenType.POINTER, regNum, OperandType.REGISTER));
+                    operands.add(new Operand(prevToken.type() == TokenType.POINTER, regNum, null,OperandType.REGISTER));
                     break;
 
                 case CONST:
@@ -89,7 +91,23 @@ public class Parser {
 
                     comma = false;
 
-                    operands.add(new Operand(prevToken.type() == TokenType.POINTER, constant, OperandType.CONST));
+                    operands.add(new Operand(prevToken.type() == TokenType.POINTER, constant, null, OperandType.CONST));
+                    break;
+
+                case LABEL_REFERENCE:
+                    if(prevToken == null || command == null)
+                        throw new AssemblyException("unexpected label reference", token);
+
+                    if(!operands.isEmpty() && !comma)
+                        throw new AssemblyException("comma expected", prevToken);
+
+                    comma = false;
+
+                    operands.add(new Operand(prevToken.type() == TokenType.POINTER, -1, token.value(), OperandType.LABEL_REFERENCE));
+                    break;
+
+                case LABEL_DECLARATION:
+                    commands.add(new Command(token, new ArrayList<>()));
                     break;
 
                 case POINTER, COMMENT: break;
@@ -97,9 +115,10 @@ public class Parser {
                 case COMMA: comma = true; break;
             }
 
-            if (command != null && (token.type().isCommand() || i == tokens.size() - 1)) {
+            if (command != null && (token.type().isCommand() || (nextToken != null && nextToken.type() == TokenType.LABEL_DECLARATION) || i == tokens.size() - 1)) {
                 commands.add(new Command(command, new ArrayList<>(operands)));
                 operands.clear();
+                command = null;
             }
 
             if(token.type().isCommand()) {
