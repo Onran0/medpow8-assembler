@@ -12,7 +12,7 @@ import static com.github.onran0.medpow8.assembler.token.TokenType.*;
 
 public class Tokenizer {
     private static final String IGNORABLE = "\t\r ";
-    private static final String LETTERS = "qwertyuiopasdfghjklzxcvbnm";
+    private static final String ID_CHARS = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM0123456789_";
     private static final char REGISTER_DECLARATION = 'r';
     private static final char FLAG_E_DECLARATION = 'e';
     private static final char FLAG_L_DECLARATION = 'l';
@@ -83,7 +83,7 @@ public class Tokenizer {
             if (!chars.isEmpty())
                 next = chars.get(chars.size() - 1);
 
-            boolean flag = FLAGS.indexOf(c) != -1 && (next == null || LETTERS.indexOf(next) == -1);
+            boolean flag = FLAGS.indexOf(c) != -1 && (next == null || ID_CHARS.indexOf(next) == -1);
 
             if (parsingComment || c == COMMENT_START) {
                 if (!parsingComment)
@@ -116,7 +116,7 @@ public class Tokenizer {
                     parsingRegister = false;
                     tokens.add(new Token(type, null, line, column));
                 }
-            } else if (parsingNum || DIGITS.indexOf(c) != -1) {
+            } else if (parsingNum || (DIGITS.indexOf(c) != -1 && !parsingCommandOrLabel)) {
                 if (!parsingNum)
                     parsingNum = true;
 
@@ -148,7 +148,7 @@ public class Tokenizer {
 
                     tokens.add(new Token(type, null, line, column));
                 }
-            } else if (parsingCommandOrLabel || LETTERS.indexOf(c) != -1) {
+            } else if (parsingCommandOrLabel || ID_CHARS.indexOf(c) != -1) {
                 if (c == REGISTER_DECLARATION && next != null && DIGITS.indexOf(next) != -1)
                     parsingRegister = true;
                 else {
@@ -157,10 +157,10 @@ public class Tokenizer {
 
                     buffer.append(c);
 
-                    if (next == null || (LETTERS.indexOf(next) == -1) && next != LABEL_DECLARATION) {
+                    if (next == null || (ID_CHARS.indexOf(next) == -1) && next != LABEL_DECLARATION) {
                         parsingCommandOrLabel = false;
 
-                        TokenType type = COMMAND_NAME_TO_TYPE.get(buffer.toString());
+                        TokenType type = COMMAND_NAME_TO_TYPE.get(buffer.toString().toLowerCase());
 
                         if (type == null && !prevIsJmp)
                             throw new AssemblyException("undefined command:" + buffer, line, column);
