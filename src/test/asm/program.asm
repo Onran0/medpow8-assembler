@@ -1,9 +1,9 @@
-jmp a
+JMP TEST_2
 
-b:
-    dial 5
-    hlt
+TEST_1:
+    DIAL 5
+    HLT
 
-a:
-    dial 123
-    jmp b
+TEST_2:
+    DIAL 123
+    JMP TEST_1
